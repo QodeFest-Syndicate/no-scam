@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
@@ -24,6 +26,10 @@ from src.service.domain.types import (
     RecoveryResponse,
     ScenariosResponse,
 )
+
+from src.service.whatsapp import create_whatsapp_router
+from src.service.whatsapp_store import WhatsAppStore
+from src.service.whatsapp_worker import WhatsAppWorker
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +61,27 @@ def _assess(message: MessageIn, mode: AssessMode) -> Assessment:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    whatsapp = settings.whatsapp
+    store = WhatsAppStore(whatsapp.db_path, f"{whatsapp.waba_id}:{whatsapp.phone_number_id}") if whatsapp else None
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        if whatsapp is None or store is None:
+            yield
+            return
+        await asyncio.to_thread(store.initialize)
+        worker = WhatsAppWorker(whatsapp, store, _assess)
+        stop = asyncio.Event()
+        task = asyncio.create_task(worker.run(stop))
+        try:
+            yield
+        finally:
+            stop.set()
+            await task
+            worker.close()
+
     app = FastAPI(
+        lifespan=lifespan,
         title="WatchDog AI demo backend",
         description=(
             "Reasons to pause, visible evidence and calm next steps for one "
@@ -95,6 +121,8 @@ def create_app() -> FastAPI:
     @app.post("/api/recovery", response_model=RecoveryResponse)
     def recovery_guidance(request: RecoveryRequest) -> RecoveryResponse:
         return recovery.get_recovery(request.incident)
+
+    app.include_router(create_whatsapp_router(whatsapp, store))
 
     ui_dir = Path(__file__).resolve().parents[1] / "ui"
     if (ui_dir / "index.html").is_file():
