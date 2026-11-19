@@ -2,6 +2,8 @@
 
 **Pause. Check through a trusted route. Decide with clearer evidence.**
 
+![WatchDog AI safety hub showing the fictional family-message scenario](Screenshot%202026-11-19%20141846.png)
+
 WatchDog AI (`no-scam`) is a scam-awareness prototype that helps people understand an unusual message—even when it appears to come from someone they know. It highlights reasons to pause, explains what has and has not been checked, and offers practical next steps.
 
 The demo follows a fictional message from **Amir (Son)** asking for an urgent **RM500** payment. It is not a scam detector or proof of anyone's identity.
