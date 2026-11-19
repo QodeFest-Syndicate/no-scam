@@ -56,6 +56,22 @@ References:
 - `.agents/skills/usage-based-metering-billing-integration/references/pricing-model-reference.md`
 - `.agents/skills/usage-based-metering-billing-integration/references/quota-enforcement-patterns.md`
 
+### Quarto Publishing
+
+Read `.agents/skills/quarto-publishing/SKILL.md` before rendering any deliverable document.
+
+Use this skill when API reference docs, developer portals, release documentation, onboarding guides, or GTM materials must ship as HTML, PDF, Word, slides, dashboards, books, or websites.
+
+Scripts:
+
+- `.agents/skills/quarto-publishing/scripts/setup-quarto.sh` — install and verify the pinned Quarto CLI inside the project `.venv`.
+
+References:
+
+- `.agents/skills/quarto-publishing/reference.md` — format flags, project configuration, publishing targets, and CI/CD doc-build patterns.
+
+Render with `.venv/bin/quarto render <file> --to <format>` and report source path, output path, format, and remaining warnings. Rendered documentation must stay traceable to deployed capabilities and current evidence.
+
 Use these materials as operational guidance, not as substitutes for deployed behavior, financial approval, legal approval, or current requirements.
 
 ## Reporting Line

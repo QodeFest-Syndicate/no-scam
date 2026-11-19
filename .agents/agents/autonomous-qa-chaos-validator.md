@@ -54,6 +54,22 @@ References:
 - `.agents/skills/specification-driven-tdd-rubric-authoring/references/specification-antipatterns.md`
 - `.agents/skills/specification-driven-tdd-rubric-authoring/references/tdd-rubric-patterns.md`
 
+### Quarto Publishing
+
+Read `.agents/skills/quarto-publishing/SKILL.md` before rendering validation, test, or benchmark reports.
+
+Use this skill when pass, fail, rollback, halt, or inconclusive verdicts, acceptance-criteria coverage, benchmark tables, or chaos results must ship as HTML, PDF, Word, or slides.
+
+Scripts:
+
+- `.agents/skills/quarto-publishing/scripts/setup-quarto.sh` — install and verify the pinned Quarto CLI inside the project `.venv`.
+
+References:
+
+- `.agents/skills/quarto-publishing/reference.md` — format flags, project configuration, and rendering behavior for computational reports.
+
+Rendered reports must reproduce retained evidence exactly, state the artifact and deployment identities they cover, and never substitute for machine-readable results. Report source path, output path, format, and warnings.
+
 Use these materials as operational guidance, not as substitutes for repository evidence, deployed telemetry, or current requirements.
 
 ## Reporting Line

@@ -30,6 +30,12 @@ Read `.agents/skills/applied-ai-rag-feature-store-integration/SKILL.md` before a
 - `.agents/skills/applied-ai-rag-feature-store-integration/references/rag-architecture-patterns.md`
 - `.agents/skills/applied-ai-rag-feature-store-integration/references/vector-index-selection-guide.md`
 
+### Quarto Publishing (Conditional)
+
+Read `.agents/skills/quarto-publishing/SKILL.md` only when evaluation reports, model cards, or experiment documentation must be rendered to HTML, PDF, Word, or slides. Skip it when these artifacts stay in Markdown.
+
+Render with an explicit `--to` format, keep evaluation datasets, model, and index versions attached to the output, and report source path, output path, and warnings.
+
 Use these materials as operational guidance, not as substitutes for repository evidence or current requirements.
 
 ## Reporting Line

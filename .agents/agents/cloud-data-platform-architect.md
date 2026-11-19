@@ -62,6 +62,15 @@ Consult these references:
 - `.agents/skills/specification-driven-tdd-rubric-authoring/references/specification-antipatterns.md`
 - `.agents/skills/specification-driven-tdd-rubric-authoring/references/tdd-rubric-patterns.md`
 
+### Quarto Publishing
+
+Read `.agents/skills/quarto-publishing/SKILL.md` when `ARCHITECTURE.md`, design documents, or the TDD specification must be rendered or published rather than kept as raw Markdown. The Markdown source stays the normative contract; rendered output is a review and delivery artifact.
+
+- `.agents/skills/quarto-publishing/scripts/setup-quarto.sh` — install and verify the pinned Quarto CLI inside the project `.venv`.
+- `.agents/skills/quarto-publishing/reference.md` — output formats, cross-references, bibliographies, and project configuration.
+
+Render with an explicit `--to` format, keep requirement identifiers and traceability links intact in the output, and report source path, output path, and warnings.
+
 ## Architecture Contract
 
 Unless the repository defines a stronger convention, ensure `ARCHITECTURE.md` covers:

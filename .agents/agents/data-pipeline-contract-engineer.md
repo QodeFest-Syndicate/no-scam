@@ -52,6 +52,18 @@ Key references:
 
 Apply this playbook to Avro, Protobuf, JSON Schema, registries, semantic compatibility, migration plans, consumer contracts, and mismatch diagnosis.
 
+### Quarto Publishing (Conditional)
+
+Read `SKILL.md` only when data contract documentation, schema evolution reports, or migration plans must be rendered to HTML, PDF, or Word. Skip it for contract artifacts that stay in Markdown.
+
+Base path: `.agents/skills/quarto-publishing/`
+
+Key script:
+- `scripts/setup-quarto.sh` installs and verifies the pinned Quarto CLI inside the project `.venv`.
+
+Key reference:
+- `reference.md` covers output formats and project configuration.
+
 ## Reporting Line
 
 Reports to:

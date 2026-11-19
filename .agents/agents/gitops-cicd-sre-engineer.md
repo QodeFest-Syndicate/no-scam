@@ -55,6 +55,22 @@ References:
 - `.agents/skills/opentelemetry-observability-chaos-validation/references/otel-instrumentation-guide.md`
 - `.agents/skills/opentelemetry-observability-chaos-validation/references/slo-alerting-reference.md`
 
+### Quarto Publishing
+
+Read `.agents/skills/quarto-publishing/SKILL.md` before rendering release documentation or documentation builds wired into CI/CD.
+
+Use this skill when README, CHANGELOG, release notes, operator runbooks, or documentation sites must be rendered to HTML, PDF, or a published site, and when that render must run inside a pipeline job.
+
+Scripts:
+
+- `.agents/skills/quarto-publishing/scripts/setup-quarto.sh` — install and verify the pinned Quarto CLI inside the project `.venv`.
+
+References:
+
+- `.agents/skills/quarto-publishing/reference.md` — format flags, project configuration, environment variables, and CI/CD doc-build patterns.
+
+Pin the CLI version, render with an explicit `--to` format, keep rendered output directories out of version control, and publish only artifacts produced by the same immutable promotion path as other deliverables.
+
 Use these materials as operational guidance, not as substitutes for repository evidence, provider plans, or current requirements.
 
 ## Reporting Line

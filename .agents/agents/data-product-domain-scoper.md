@@ -53,6 +53,15 @@ Consult these references:
 - `.agents/skills/data-scoped-domain-boundary-modeling/references/decision-framework.md`
 - `.agents/skills/data-scoped-domain-boundary-modeling/references/domain-boundary-patterns.md`
 
+### Quarto Publishing
+
+Read `.agents/skills/quarto-publishing/SKILL.md` when scope documents, specification packages, or gate packets must be rendered for review instead of handed over as raw Markdown. Markdown and `.thoughts/` sources stay authoritative; rendered output is a distribution artifact.
+
+- `.agents/skills/quarto-publishing/scripts/setup-quarto.sh` — install and verify the pinned Quarto CLI inside the project `.venv`.
+- `.agents/skills/quarto-publishing/reference.md` — output formats, cross-references, and project configuration.
+
+Render with an explicit `--to` format, preserve requirement, ownership, and open-question identifiers in the output, and report source path, output path, and warnings.
+
 ## Required Outputs
 
 Produce a concise scope package containing:

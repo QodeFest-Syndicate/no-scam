@@ -32,6 +32,20 @@ Key references:
 
 Apply the playbook to personas, tenant context, RBAC, BFF contracts, frontend state, visualizations, SDKs, component tests, CDN and edge delivery, accessibility, onboarding, billing, and defect resolution.
 
+### Quarto Publishing
+
+Read `.agents/skills/quarto-publishing/SKILL.md` when dashboards, interactive documentation, or SDK reference docs must be rendered instead of hand-authored.
+
+Base path: `.agents/skills/quarto-publishing/`
+
+Key script:
+- `scripts/setup-quarto.sh` installs and verifies the pinned Quarto CLI inside the project `.venv`.
+
+Key reference:
+- `reference.md` covers dashboard, website, HTML, and project configuration options.
+
+Render with an explicit `--to` format and report source path, output path, format, and warnings. Rendered dashboards and docs must match shipped behavior and meet the same accessibility and performance budgets as hand-built UI.
+
 ## Reporting Line
 
 Reports to:
