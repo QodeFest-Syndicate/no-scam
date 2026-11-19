@@ -256,6 +256,119 @@ uv run watchdog-ai --demo familiar-link --mode offline
 
 This workflow is separate from the browser walkthrough and HTTP assessment API.
 
+## Deploy on Alibaba Cloud ECS
+
+The root `Dockerfile` packages the API, static UI, and standalone AI CLI together. `infra/alicloud/` creates one pay-as-you-go Ubuntu 24.04 ECS VM, an encrypted 40 GiB disk, a VPC/vSwitch, and restricted security-group rules. Kuala Lumpur (`ap-southeast-3`) is the default region. There is no database, registry provisioning, load balancer, public TLS, or automatic CI/CD deployment.
+
+**This is a single-server demo, not a highly available production deployment.** ECS, disk, outbound traffic, remote state, and AI calls can incur charges. Nothing is provisioned by building the image or running the mocked Terraform tests. Deployments and rollbacks replace the VM, cause downtime, change its public IP, and require reapplying host secrets and private-registry authentication.
+
+### 1. Build and test the image
+
+Run these commands from the repository root on a machine with Docker and Buildx. The ECS instance must be x86_64, so build for `linux/amd64`:
+
+```bash
+docker buildx build --platform linux/amd64 --load -t no-scam:local .
+docker run --rm --name no-scam-local -p 127.0.0.1:8000:8000 \
+  --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+  --cap-drop ALL --security-opt no-new-privileges:true no-scam:local
+```
+
+In another terminal, open http://localhost:8000/ and run:
+
+```bash
+curl --fail http://localhost:8000/health
+curl --fail http://localhost:8000/api/meta
+```
+
+Use the browser walkthrough to check assessments and recovery. No secrets or local environment files enter the build context; the image runs as a non-root user and includes an HTTP health check. The container port is fixed at **8000**. To enable live AI locally, add `--env-file .env` to `docker run`; use fictional data only.
+
+Publish the tested image to a registry you control, such as Alibaba Cloud Container Registry (ACR). Create the repository and authenticate using its console-provided instructions first. Publishing uploads application code:
+
+```bash
+export IMAGE_REPOSITORY='YOUR_REGISTRY/YOUR_NAMESPACE/no-scam'
+export IMAGE_TAG="$(git rev-parse --short HEAD)"
+docker tag no-scam:local "$IMAGE_REPOSITORY:$IMAGE_TAG"
+docker push "$IMAGE_REPOSITORY:$IMAGE_TAG"
+docker buildx imagetools inspect "$IMAGE_REPOSITORY:$IMAGE_TAG"
+```
+
+Record the pushed `sha256` digest. Terraform requires `registry/repository@sha256:...`, never `latest`. Keep previous digests for rollback. The base images have version tags; pin their digests too if you require immutable base-image rebuilds.
+
+### 2. Prepare cloud inputs and remote state
+
+You need Terraform **1.7+**, Alibaba Cloud permissions for ECS/VPC/security groups and disk encryption, an existing regional ECS SSH key pair, and a published image. Select an available x86_64 instance with **at least 2 vCPU / 4 GiB RAM**, a compatible zone, and its **Ubuntu 24.04 x86_64 system image ID**; these vary by region and account capacity.
+
+The OSS backend requires a separately managed **private, versioned OSS bucket** and a **TableStore lock table** with a single `LockID` primary key of type `String`. Keep both backend locking fields configured. State objects use server-side encryption and private ACLs. Restrict RAM access to the deployment operator and state resources; retain bucket versions for recovery. Backend resources are not created by this stack, so app teardown cannot delete its own state storage.
+
+```bash
+cp infra/alicloud/terraform.tfvars.example infra/alicloud/terraform.tfvars
+cp infra/alicloud/backend.hcl.example infra/alicloud/backend.hcl
+```
+
+Replace all placeholders. Set `ssh_cidrs` to your administrator public IPv4 with `/32`; the example address is not usable. Leave `http_cidrs = []` for SSH-tunnel-only access. If an IP-restricted **unencrypted** demo endpoint is necessary, explicitly supply its client IPv4 CIDRs (`/24` or narrower). Never send private data over that HTTP endpoint; this configuration intentionally rejects public `0.0.0.0/0` access. A public service needs HTTPS, authentication, and request/rate controls before enabling paid AI calls—CORS is not access control.
+
+Authenticate Terraform through the provider's environment variables or an existing Alibaba Cloud credential profile. Prefer short-lived RAM/STS credentials: `ALICLOUD_ACCESS_KEY`, `ALICLOUD_SECRET_KEY`, and `ALICLOUD_SECURITY_TOKEN`. Do not paste credentials into Terraform files, commands saved in shell history, or backend configuration. Local tfvars, backend config, plans, and state files are gitignored; `.terraform.lock.hcl` should be committed.
+
+### 3. Review and apply
+
+```bash
+terraform -chdir=infra/alicloud init -backend-config=backend.hcl
+terraform -chdir=infra/alicloud fmt -check -recursive
+terraform -chdir=infra/alicloud validate
+terraform -chdir=infra/alicloud test
+terraform -chdir=infra/alicloud plan -out=deployment.tfplan
+# Review the plan and costs before explicitly creating resources.
+terraform -chdir=infra/alicloud apply deployment.tfplan
+terraform -chdir=infra/alicloud output
+```
+
+Cloud-init installs Ubuntu's `docker.io` package and starts the systemd-managed container. The VM needs outbound package-mirror, registry, DNS, and optional AI connectivity. A successful Terraform apply confirms infrastructure creation, **not** application readiness. Verify the selected image boots with IMDSv2, and inspect bootstrap and container status over SSH:
+
+```bash
+export ECS_IP="$(terraform -chdir=infra/alicloud output -raw public_ip)"
+ssh root@"$ECS_IP" 'cloud-init status --wait'
+ssh root@"$ECS_IP" 'systemctl status no-scam --no-pager'
+ssh root@"$ECS_IP" 'docker inspect --format "{{.State.Health.Status}}" no-scam'
+ssh root@"$ECS_IP" 'journalctl -u no-scam -n 50 --no-pager'
+```
+
+Add `-i /path/to/private-key` if your key is not loaded in your SSH agent. The selected Alibaba Ubuntu image must support key-based root SSH. For a **private registry**, log in on the VM as root using a scoped pull credential and `docker login --password-stdin`, then run `systemctl restart no-scam`. Do not put registry passwords in cloud-init. Until authenticated, image pulls fail and systemd retries; stop the unit while performing extended setup. Remove temporary registry credentials when no longer needed, and renew them before future image pulls.
+
+Start the tunnel, leave it running, and open http://localhost:8000/:
+
+```bash
+ssh -N -L 127.0.0.1:8000:127.0.0.1:8000 root@"$ECS_IP"
+```
+
+Check `/health`, `/api/meta`, the browser walkthrough, and invalid API input. Systemd restarts exited containers; Docker health status is diagnostic and **does not** automatically restart a running but unhealthy container. Logs rotate at 10 MiB with three retained files; configure external monitoring and alerting before production use.
+
+### 4. Add optional AI credentials on the VM
+
+The VM starts in rules-only mode. Over SSH, use `sudoedit /etc/no-scam/app.env` to add only the runtime variables you need, such as `DASHSCOPE_API_KEY`, its matching regional `DASHSCOPE_BASE_URL`, and `QWEN_MODEL`. The Qoder/OpenAI-compatible variables in the configuration reference also work. Use plain `KEY=value` lines without shell `export` or surrounding quotes.
+
+Keep the file owned by root with mode `0600`, then run `systemctl restart no-scam`. Credentials enter the container only at runtime; they are not in the image, cloud-init, or Terraform state. Root and Docker administrators can still inspect container environment variables, so restrict host access. Validate a fictional request with `mode=ai`; `/api/meta` alone does not prove the key works. Outbound TLS protects the AI call, but message data is still sent to the configured provider.
+
+### Updates, rollback, and teardown
+
+- Build, test, and publish a new immutable digest; change `container_image`, review the plan, and apply. Bootstrap/image changes deliberately replace the VM because cloud-init first-boot provisioning does not reliably replay on an ECS user-data update.
+- Deletion protection defaults to **true**. Before a planned replacement, first set it to false and apply **only that change**; then update the digest or image in a separate reviewed plan. Restore protection afterward. Reinstall host secrets/private-registry credentials and recheck health after replacement.
+- To roll back, repeat that process with the previous known-good digest. No database migration is involved, but local VM data is discarded. Keep secrets in an approved external secret store so they can be restored; do not treat this VM as their only copy.
+- Periodically run `terraform plan` to review drift; do not apply unexpected changes blindly.
+- For teardown, disable deletion protection in a separate apply, review `terraform plan -destroy`, and explicitly run `terraform destroy`. Remote state storage and registry images remain separately managed and may continue to incur charges.
+
+### Offline infrastructure checks
+
+These commands install the provider and use mocked resources without Alibaba Cloud credentials or provisioning:
+
+```bash
+terraform -chdir=infra/alicloud init -backend=false
+terraform -chdir=infra/alicloud validate
+terraform -chdir=infra/alicloud test
+uv run --locked pytest
+```
+
+Mocks validate configuration and access restrictions, not real cloud capacity, IAM permissions, Ubuntu boot, registry access, or Docker startup. A Docker build/run and a real reviewed cloud plan plus smoke test are still required before deployment is considered verified.
+
 ## Troubleshooting
 
 | Problem | What to try |
