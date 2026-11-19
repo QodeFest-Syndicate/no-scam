@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#102739" />
+  <meta name="description" content="WatchDog AI — make the evidence behind trust visible." />
+  <title>WatchDog AI · Digital Trust</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark" aria-hidden="true">🐕</div><div><strong>WatchDog <em>AI</em></strong><small>YOUR DIGITAL COMPANION</small></div></div>
+    <div class="section-label">SAFETY CENTER</div>
+    <nav aria-label="Pages" class="navigation">
+      <button class="nav active" data-go="receive"><span>⌂</span> My safety hub</button>
+      <button class="nav" data-go="understand"><span>◈</span> Understand request</button>
+      <button class="nav" data-go="check"><span>◇</span> Verification center</button>
+      <button class="nav" data-go="evidence"><span>▤</span> Evidence report</button>
+      <button class="nav" data-go="decide"><span>✓</span> My decision</button>
+      <button class="nav" data-go="support"><span>♡</span> Get help</button>
+    </nav>
+    <div class="side-bottom"><div class="side-icon">🛡️</div><strong>Your safety comes first.</strong><p>Familiar contacts can still send unexpected requests. Check before acting.</p><span class="demo-tag">● Prototype · Fictional scenario</span></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><button class="mobile-logo" data-go="receive">🐕 WatchDog AI</button><div class="top-right"><span class="pill">SYNDICATE · DIGITAL TRUST</span><span class="avatar" aria-label="Demo user Salmah">S</span></div></header>
+    <div class="container">
+      <div class="hero"><div><span class="eyebrow light">YOUR TRUSTED DIGITAL WATCHDOG</span><h1 id="page-title">Hello, Puan Salmah 👋</h1><p id="page-intro">You're in control. We'll help you check before you act.</p></div><div class="dog" aria-hidden="true">🐶</div></div>
+      <div class="steps" aria-label="Progress"><span data-step="receive" class="active">1 · Receive</span><span data-step="understand">2 · Understand</span><span data-step="check">3 · Check</span><span data-step="evidence">4 · Explain</span><span data-step="decide">5 · Decide</span><span data-step="support">6 · Support</span></div>
+      <div class="notice"><span class="notice-icon">✦</span><div><strong>Demo mode — your privacy matters.</strong><p>All messages and check results are fictional. The frontend does not access your real messages, contact your family, or connect to live Qwen or official services.</p></div></div>
+
+      <section id="receive" class="screen" aria-labelledby="receive-title">
+        <div class="section-heading"><div><span class="eyebrow">01 / RECEIVE</span><h2 id="receive-title">A familiar name. An unusual request.</h2><p>Someone who looks like your son has sent you this message.</p></div><span class="chip">SAMPLE MESSAGE</span></div>
+        <article class="message-card"><div class="message-head"><div class="contact-avatar">A</div><div><strong>Amir (Son)</strong><small>Familiar contact · Messaging app</small></div><small class="message-time">12:34 PM</small></div><div class="chat-bg"><div class="bubble">Hi Mak, it's me Amir. I need help <b>urgently</b> 😥<br><br>My bank account has a problem. Please pay <b>RM500 right now</b> using this link:<br><br><span class="sample-link">https://urgent-family-pay.example</span><br><br><b>Please don't call me.</b> I'm in a meeting. Just do it quickly!<small class="time">12:34 ✓✓</small></div></div><div class="message-foot">ⓘ Fictional message. Example link is intentionally inactive.</div></article>
+        <div class="actions"><strong>🐕 Does something feel unusual?</strong><button class="btn primary large" data-go="understand">Understand this message <span>→</span></button><button class="btn ghost" data-go="support">I've already clicked, shared details or paid</button></div>
+      </section>
+
+      <section id="understand" class="screen" hidden aria-labelledby="understand-title">
+        <div class="section-heading"><div><span class="eyebrow">02 / UNDERSTAND</span><h2 id="understand-title">What is this message asking?</h2><p>A simple explanation of the request and visible warning signs.</p></div><span class="chip amber">PREPARED QWEN DEMO</span></div>
+        <div class="card assessment"><div class="assessment-header"><span class="big-icon">⚠️</span><div><span class="eyebrow amber-text">REASONS TO PAUSE</span><h3>This request needs verification</h3><p>The message asks you to pay RM500 immediately through a new link, without calling your son. A familiar account does not prove who sent the request.</p></div></div><hr><h3>Here is what we noticed</h3><div id="signals" class="signal-grid"></div><div class="footnote">ⓘ This is a prepared, rule-based interpretation for the demo. <b>Qwen is not connected.</b> Warning signs are not proof of fraud.</div></div>
+        <div class="actions"><button class="btn primary large" data-go="check">See how WatchDog checks <span>→</span></button><button class="btn neutral" data-go="receive">← Back to message</button></div>
+      </section>
+
+      <section id="check" class="screen" hidden aria-labelledby="check-title">
+        <div class="section-heading"><div><span class="eyebrow">03 / CHECK</span><h2 id="check-title">Let's check through a trusted route.</h2><p>A separate contact route is safer than replying to the suspicious message.</p></div><span class="chip">AGENT WORKFLOW DEMO</span></div>
+        <div class="card agent-card"><div class="agent-top"><span class="big-icon mint">🤖</span><div><h3>WatchDog's checking plan</h3><p>Proposed procedure: contact Amir through a previously saved number, away from the original message. A reply must refer to this specific RM500 request.</p></div></div><ol class="workflow"><li><span>1</span><div><b>Interpret the request</b><small>Urgent RM500 payment with an unfamiliar link · Prepared analysis</small></div><span class="status prepared">Prepared</span></li><li><span>2</span><div><b>Choose an independent route</b><small>Call the number already saved for Amir, not the number or link in the message</small></div><span class="status prepared">Proposed</span></li><li><span>3</span><div><b>Ask about this request</b><small>“Did you send a message asking me to pay RM500 using this link?”</small></div><span class="status" id="check-status">Not checked</span></li></ol><div class="callout">🔒 <b>Permission required:</b> This demo will not send messages or initiate calls. A real check would need your permission and an available integration.</div><div class="check-actions"><button class="btn primary" id="simulate-check">Run simulated check</button><button class="btn neutral" data-go="evidence">View current evidence →</button></div><div id="simulation-result" class="simulation-result" hidden role="status"></div></div>
+        <div class="hardware"><div class="hardware-icon">🔘</div><div><span class="eyebrow">PHYSICAL COMPANION · CONCEPT ONLY</span><h3>One familiar way to ask for help</h3><p>A future button, card or home object could request a check or show status. No physical device or secure identity proof is implemented in this demo.</p></div><span class="chip">NOT CONNECTED</span></div>
+      </section>
+
+      <section id="evidence" class="screen" hidden aria-labelledby="evidence-title">
+        <div class="section-heading"><div><span class="eyebrow">04 / EXPLAIN</span><h2 id="evidence-title">Here is what we know.</h2><p>Every check should show its source, its result, and what is still unknown.</p></div><span class="chip amber">NOT VERIFIED</span></div>
+        <div class="card evidence-card"><div class="report-head"><div><h3>Evidence for this specific request</h3><p>Amir · RM500 · urgent-family-pay.example</p></div><span class="status unresolved">Identity unresolved</span></div><div class="evidence-row"><div><b>Message content</b><small>Source: sample message provided in this demo</small></div><span class="status prepared">Observed</span><p>Urgency, an unverified link, payment request, and instruction not to call.</p></div><div class="evidence-row"><div><b>Independent family check</b><small>Source: previously saved contact · no real call placed</small></div><span id="family-evidence-status" class="status unresolved">Not completed</span><p id="family-evidence-detail">No response has been obtained. The request and sender remain unverified.</p></div><div class="evidence-row"><div><b>Official link or account lookup</b><small>Source: official checking tools · no integration available</small></div><span class="status unresolved">Unavailable</span><p>No live lookup was performed. We cannot say the link is safe or malicious.</p></div><div class="conclusion"><span>⚠️</span><div><b>Our guidance: pause before paying.</b><p>We cannot confirm who sent this message or whether the link is legitimate. Verify the specific request independently before taking any action.</p></div></div></div>
+        <div class="actions"><button class="btn primary large" data-go="decide">Choose what to do next <span>→</span></button><button class="btn neutral" data-go="check">← Back to checking</button></div>
+      </section>
+
+      <section id="decide" class="screen" hidden aria-labelledby="decide-title">
+        <div class="section-heading"><div><span class="eyebrow">05 / DECIDE</span><h2 id="decide-title">The choice is yours.</h2><p>It's okay to stop, check, or take more time.</p></div></div>
+        <div class="choice recommended"><span class="recommended-label">✓ RECOMMENDED NEXT STEP</span><div class="choice-content"><div class="choice-icon">📞</div><div><h3>Verify using your saved contact</h3><p>Call Amir using the number you already trust. Ask whether he sent this exact RM500 request. Do not use the link or contact details from the message.</p></div></div><button class="btn primary" data-choice="verify">Show verification steps →</button></div>
+        <div class="choice-grid"><div class="choice"><div class="choice-icon">✋</div><h3>Pause or decline</h3><p>Don't click the link or transfer money. You can check later.</p><button class="btn neutral" data-choice="decline">Pause this request</button></div><div class="choice"><div class="choice-icon">⚠️</div><h3>Continue anyway</h3><p>Understand the remaining risks before deciding.</p><button class="btn neutral" data-choice="continue">Understand the risks</button></div></div><div id="choice-result" class="choice-result" hidden aria-live="polite"></div><button class="btn ghost center" data-go="support">Already acted? Get help →</button>
+      </section>
+
+      <section id="support" class="screen" hidden aria-labelledby="support-title">
+        <div class="section-heading"><div><span class="eyebrow">06 / SUPPORT</span><h2 id="support-title">Already acted? Here's what to do.</h2><p>Choose what happened to see relevant next steps.</p></div></div><div class="support-intro">💙 <div><b>We can guide you through the next steps.</b><p>These are prepared, general suggestions. This demo cannot reverse payments or secure an account.</p></div></div>
+        <fieldset class="support-options"><legend>What happened?</legend><label><input type="radio" name="incident" value="clicked" checked> I clicked a link</label><label><input type="radio" name="incident" value="details"> I entered a password or personal details</label><label><input type="radio" name="incident" value="paid"> I sent money or shared banking information</label></fieldset><div id="recovery-content" class="card recovery" aria-live="polite"></div><div class="actions"><button class="btn primary large" id="restart">↻ Restart demo</button></div>
+      </section>
+      <footer>🐕 <strong>WatchDog AI</strong> · Syndicate <span>Hackathon demo · Prepared analysis and simulated checks · No real Qwen, calls, or identity verification</span></footer>
+    </div>
+  </main>
+</div>
+</body>
+</html>
