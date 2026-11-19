@@ -17,7 +17,7 @@ The demo follows a fictional message from **Amir (Son)** asking for an urgent **
 - **Read the evidence:** distinguish observed warning signs from checks that have not happened.
 - **Get support after acting:** see general guidance for clicking a link, sharing details, or sending money.
 
-> **Demo only.** The browser walkthrough uses prepared content and simulated checks. It does not call the backend API or live Qwen, contact anyone, or open the example link.
+> **Demo only.** The browser loads its fictional scenario, assessment, evidence, and recovery guidance from the backend API. When configured, Qwen analyses the sample message. Family checks remain simulated; nobody is contacted and the example link is never opened.
 
 ## Run the demo
 
@@ -70,20 +70,22 @@ The same server serves both the frontend and API—there is no second developmen
 
 | Component | Current behavior |
 | --- | --- |
-| Browser walkthrough | Interactive screens with prepared content; not connected to the API |
+| Browser walkthrough | Fetches the sample, assessments, evidence, and recovery guidance from the API |
 | Assessment API | Runs local rules against supplied text; optionally uses Qwen |
-| Qwen integration | Optional live API enrichment when configured; does not change the browser walkthrough |
+| Qwen integration | Live enrichment when configured; the browser labels live AI and local rules separately |
 | Family verification | Simulated only; no calls, messages, or identity checks |
 | Link checking | Links are never opened, fetched, or scanned |
 | Physical companion | Product concept only; no connected hardware |
 
-**Use fictional data only.** Live Qwen requests send message content to DashScope. The service does not log message bodies, but this prototype should not be used with private messages, credentials, or real financial details.
+**Use fictional data only.** Live Qwen requests send message content to the configured Qoder/OpenAI-compatible gateway or DashScope. The service does not log message bodies, but this prototype should not be used with private messages, credentials, or real financial details.
 
 Warning signs are **not proof of fraud**, and finding no signs does **not** mean a message is safe. Recovery suggestions are general guidance, not a guarantee of recovering money or securing an account. The demo includes Malaysia-specific guidance; confirm current official procedures before any real-world use.
 
 ## Optional Qwen AI
 
-Skip this section if you only want the browser demo or local rules. These settings enable AI enrichment for the **HTTP API**, not the browser walkthrough.
+These settings enable AI enrichment for both the **HTTP API and browser walkthrough**. Without a key, the browser uses local rules.
+
+For an existing Qoder workspace `.env`, the backend uses `QODER_API_KEY`, `QODER_HOST`, and `OPENAI_ENDPOINT` directly. `OPENAI_BASE_URL` can supply the complete endpoint instead, and `OPENAI_API_KEY` is accepted when `QODER_API_KEY` is empty. Leave `DASHSCOPE_API_KEY` empty for this route; a nonempty DashScope key selects the direct DashScope configuration instead.
 
 1. If you do not already have a `.env` file, copy `.env.example` to `.env` in the repository root.
 2. Set your DashScope key in `.env`:
@@ -93,7 +95,7 @@ Skip this section if you only want the browser demo or local rules. These settin
    ```
 
 3. Restart the server.
-4. Open the [API explorer](http://localhost:8000/docs), expand `POST /api/assess`, choose **Try it out**, and set `mode` to `ai` to test a live response.
+4. Open the browser walkthrough and select **Understand this message**. The result identifies whether live Qwen or local rules answered. You can also use the [API explorer](http://localhost:8000/docs) with `POST /api/assess?mode=ai`.
 
 `.env` is gitignored. **Never commit a real key.**
 
@@ -107,7 +109,7 @@ Pass the mode as a query parameter, for example `/api/assess?mode=rules`.
 | `rules` | Uses local rules only; never calls Qwen |
 | `ai` | Requires a usable Qwen response; returns HTTP `503` if one is unavailable |
 
-Check `assessment.engine` (`rules` or `qwen`) and `assessment.aiAvailable` to see what actually answered. `/api/meta` reports configuration, not proof that a live AI request succeeded.
+Check `assessment.engine` (`rules` or `qwen`) and `assessment.aiAvailable` to see what actually answered. `/api/meta` reports configuration, not proof that a live AI request succeeded. The browser uses strict `ai` mode when configured; a failed call shows retry and an explicit local-rules option instead of silently labelling a fallback as AI.
 
 ### Configuration reference
 
@@ -117,8 +119,12 @@ Defaults work for the local demo. See `.env.example` for a ready-to-copy templat
 | --- | --- | --- |
 | `DASHSCOPE_API_KEY` | Empty | Enables Qwen requests when set |
 | `DASHSCOPE_BASE_URL` | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | DashScope API endpoint |
-| `QWEN_MODEL` | `qwen-plus` | Model used for enrichment |
-| `AI_TIMEOUT_MS` | `8000` | AI timeout in milliseconds; accepted range is 1,000–30,000 |
+| `QWEN_MODEL` | `qwen-plus` | Model for direct DashScope enrichment |
+| `QODER_API_KEY` / `OPENAI_API_KEY` | Empty | Gateway credentials, used when the DashScope key is empty |
+| `QODER_HOST` + `OPENAI_ENDPOINT` | Empty | Gateway host and API path |
+| `OPENAI_BASE_URL` | Empty | Complete gateway URL; overrides host + path |
+| `WATCHDOG_MODEL` | `qwen3.8-flash` | Model for gateway enrichment |
+| `AI_TIMEOUT_MS` | `8000` (DashScope), `30000` (gateway) | AI timeout in milliseconds; accepted range is 1,000–30,000 |
 | `ALLOW_ORIGINS` | `http://localhost:8000,http://localhost:5173,http://localhost:3000` | Comma-separated allowed browser origins |
 | `PORT` | `8000` | Port for `uv run python -m src.service.main`; the quickstart command uses `--port` instead |
 
@@ -258,7 +264,7 @@ This workflow is separate from the browser walkthrough and HTTP assessment API.
 | Imports or dependencies are missing | Run `uv sync` from the repository root, then use the `uv run` commands above. Use `pyproject.toml` for the full app; `requirements.txt` covers the standalone AI workflow. |
 | Port 8000 is already in use | Change the startup command to `--port 8001`, then open http://localhost:8001/. |
 | The browser cannot connect | Keep the server terminal open, check it for startup errors, and make sure the browser address matches the port. |
-| The browser still says Qwen is not connected | Expected: the browser uses prepared content. Test live AI through `/docs` or the API instead. |
+| The browser shows local rules or AI unavailable | Check the server's key, matching endpoint, and model configuration; restart the server and reload the page. A live failure offers retry or explicit local rules. |
 | `mode=ai` returns `503` | Check your key, endpoint, model access, and connectivity; restart after configuration changes. Use `mode=rules` to continue without AI. |
 
 ## More about the project
