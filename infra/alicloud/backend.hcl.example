@@ -1,0 +1,10 @@
+bucket  = "REPLACE_WITH_EXISTING_PRIVATE_VERSIONED_STATE_BUCKET"
+region  = "ap-southeast-3"
+prefix  = "no-scam/demo"
+key     = "terraform.tfstate"
+encrypt = true
+acl     = "private"
+
+# Existing TableStore table with primary key LockID (String).
+tablestore_endpoint = "REPLACE_WITH_TABLESTORE_HTTPS_ENDPOINT"
+tablestore_table    = "REPLACE_WITH_LOCK_TABLE"

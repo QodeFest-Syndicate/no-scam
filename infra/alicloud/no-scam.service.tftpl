@@ -1,0 +1,25 @@
+[Unit]
+Description=WatchDog AI container
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Restart=always
+RestartSec=30
+TimeoutStartSec=600
+TimeoutStopSec=40
+ExecStartPre=-/usr/bin/docker rm -f no-scam
+ExecStart=/usr/bin/docker run --rm --pull=missing --name no-scam \
+    --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+    --cap-drop ALL --security-opt no-new-privileges:true \
+    --user 10001:10001 --pids-limit 256 --memory 2g --cpus 2 \
+    --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
+    --env-file /etc/no-scam/app.env \
+    --publish ${bind_address}:8000:8000 \
+    ${container_image}
+ExecStop=/usr/bin/docker stop --time 30 no-scam
+
+[Install]
+WantedBy=multi-user.target

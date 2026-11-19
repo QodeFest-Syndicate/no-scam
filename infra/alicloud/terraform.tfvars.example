@@ -1,0 +1,12 @@
+region            = "ap-southeast-3"
+availability_zone = "REPLACE_WITH_AVAILABLE_ZONE"
+instance_type     = "REPLACE_WITH_X86_64_2VCPU_4GIB_INSTANCE_TYPE"
+image_id          = "REPLACE_WITH_UBUNTU_24_04_X64_SYSTEM_IMAGE_ID"
+key_pair_name     = "REPLACE_WITH_EXISTING_ECS_KEY_PAIR_NAME"
+
+ssh_cidrs = ["192.0.2.10/32"] # Replace with your administrator public IP.
+
+container_image = "REPLACE_WITH_REGISTRY/REPOSITORY@sha256:DIGEST"
+
+# Leave empty for encrypted access through the SSH tunnel.
+http_cidrs = []
