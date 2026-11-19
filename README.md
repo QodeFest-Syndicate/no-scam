@@ -1,70 +1,176 @@
-# no-scam — WatchDog AI demo backend
+# WatchDog AI
 
-Backend for the WatchDog AI concept described in
-[docs/digital-watchdog-master-brief.md](docs/digital-watchdog-master-brief.md).
+**Pause. Check through a trusted route. Decide with clearer evidence.**
 
-Given one scripted message from a familiar family account, the service:
+WatchDog AI (`no-scam`) is a scam-awareness prototype that helps people understand an unusual message—even when it appears to come from someone they know. It highlights reasons to pause, explains what has and has not been checked, and offers practical next steps.
 
-1. finds visible reasons to pause (urgency, unverified link, money request, secrecy);
-2. shows what was checked, where the result came from and what remains unresolved;
-3. offers a safe verification route through a contact the person already trusts;
-4. gives calm next steps if the person already clicked, shared details or sent money.
+The demo follows a fictional message from **Amir (Son)** asking for an urgent **RM500** payment. It is not a scam detector or proof of anyone's identity.
 
-It never claims a message is a scam or safe, never proves identity, and never
-fetches the link. Demo data only.
+**Start here:** [Run the demo](#run-the-demo) · [Try the walkthrough](#try-the-walkthrough) · [Enable optional AI](#optional-qwen-ai) · [Developer guide](#developer-guide) · [Troubleshooting](#troubleshooting)
 
-## Stack
+## What you can try
 
-| Layer | Choice |
-| --- | --- |
-| Runtime | Python 3.11+ (verified on 3.12; managed by `uv`) |
-| HTTP | FastAPI + Uvicorn + Pydantic v2 |
-| AI (optional) | Qwen via DashScope's OpenAI-compatible API |
-| MCP | Python MCP SDK (`mcp.server.mcpserver`), stdio transport |
-| Tests | pytest + FastAPI TestClient |
+- **Understand the request:** spot urgency, an unverified link, a money request, and pressure not to call.
+- **Explore a safer check:** verify the specific request using a contact route you already trust.
+- **Read the evidence:** distinguish observed warning signs from checks that have not happened.
+- **Get support after acting:** see general guidance for clicking a link, sharing details, or sending money.
 
-## Quickstart
+> **Demo only.** The browser walkthrough uses prepared content and simulated checks. It does not call the backend API or live Qwen, contact anyone, or open the example link.
+
+## Run the demo
+
+### 1. Check the prerequisites
+
+You will need:
+
+- **Python 3.11 or newer.**
+- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** to install dependencies and run the app.
+- A web browser.
+
+No Node.js, frontend build, AI account, or API key is required. Dependency installation needs internet access; the browser walkthrough and rules-based assessments work locally afterward.
+
+### 2. Install dependencies
+
+Clone or download this repository, then open a terminal in the `no-scam` folder and run:
 
 ```bash
 uv sync
-cp .env.example .env          # optional; needed only for Qwen mode
+```
+
+### 3. Start the app
+
+```bash
 uv run uvicorn src.service.main:app --reload --port 8000
 ```
 
-- API docs: http://localhost:8000/docs
-- Health: http://localhost:8000/health
+Keep that terminal open while using the app. Press **Ctrl+C** to stop it.
 
-If `src/ui/index.html` exists (for example after merging
-`feat/frontend-watchdog`), the backend also serves the UI at `/`.
+### 4. Open it in your browser
 
-Run the test suite:
+| Page | Address |
+| --- | --- |
+| **Interactive demo** | http://localhost:8000/ |
+| API explorer for developers | http://localhost:8000/docs |
+| Server health check | http://localhost:8000/health |
+
+The same server serves both the frontend and API—there is no second development server to start.
+
+## Try the walkthrough
+
+1. Read the fictional message on **My safety hub**.
+2. Select **Understand this message** to see the four warning signs.
+3. Select **See how WatchDog checks**, then **Run simulated check**. No call is made, and the request stays unverified.
+4. Open the **Evidence report** to see what is known and what remains unresolved.
+5. Visit **My decision** to explore verification steps, pausing, or the risks of continuing.
+6. Open **Get help**, choose what happened, and review the suggested next steps. Use **Restart demo** to start over.
+
+## What is real, and what is simulated?
+
+| Component | Current behavior |
+| --- | --- |
+| Browser walkthrough | Interactive screens with prepared content; not connected to the API |
+| Assessment API | Runs local rules against supplied text; optionally uses Qwen |
+| Qwen integration | Optional live API enrichment when configured; does not change the browser walkthrough |
+| Family verification | Simulated only; no calls, messages, or identity checks |
+| Link checking | Links are never opened, fetched, or scanned |
+| Physical companion | Product concept only; no connected hardware |
+
+**Use fictional data only.** Live Qwen requests send message content to DashScope. The service does not log message bodies, but this prototype should not be used with private messages, credentials, or real financial details.
+
+Warning signs are **not proof of fraud**, and finding no signs does **not** mean a message is safe. Recovery suggestions are general guidance, not a guarantee of recovering money or securing an account. The demo includes Malaysia-specific guidance; confirm current official procedures before any real-world use.
+
+## Optional Qwen AI
+
+Skip this section if you only want the browser demo or local rules. These settings enable AI enrichment for the **HTTP API**, not the browser walkthrough.
+
+1. If you do not already have a `.env` file, copy `.env.example` to `.env` in the repository root.
+2. Set your DashScope key in `.env`:
+
+   ```dotenv
+   DASHSCOPE_API_KEY=your_dashscope_api_key
+   ```
+
+3. Restart the server.
+4. Open the [API explorer](http://localhost:8000/docs), expand `POST /api/assess`, choose **Try it out**, and set `mode` to `ai` to test a live response.
+
+`.env` is gitignored. **Never commit a real key.**
+
+### Choose an assessment mode
+
+Pass the mode as a query parameter, for example `/api/assess?mode=rules`.
+
+| Mode | Behavior |
+| --- | --- |
+| `auto` (default) | Tries Qwen when configured; falls back to local rules if AI is unavailable or its response is rejected |
+| `rules` | Uses local rules only; never calls Qwen |
+| `ai` | Requires a usable Qwen response; returns HTTP `503` if one is unavailable |
+
+Check `assessment.engine` (`rules` or `qwen`) and `assessment.aiAvailable` to see what actually answered. `/api/meta` reports configuration, not proof that a live AI request succeeded.
+
+### Configuration reference
+
+Defaults work for the local demo. See `.env.example` for a ready-to-copy template.
+
+| Variable | Default | What it controls |
+| --- | --- | --- |
+| `DASHSCOPE_API_KEY` | Empty | Enables Qwen requests when set |
+| `DASHSCOPE_BASE_URL` | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | DashScope API endpoint |
+| `QWEN_MODEL` | `qwen-plus` | Model used for enrichment |
+| `AI_TIMEOUT_MS` | `8000` | AI timeout in milliseconds; accepted range is 1,000–30,000 |
+| `ALLOW_ORIGINS` | `http://localhost:8000,http://localhost:5173,http://localhost:3000` | Comma-separated allowed browser origins |
+| `PORT` | `8000` | Port for `uv run python -m src.service.main`; the quickstart command uses `--port` instead |
+
+## Developer guide
+
+### Stack and project layout
+
+The project uses **FastAPI, Uvicorn, and Pydantic v2**, with a plain **HTML/CSS/JavaScript** frontend. Optional AI support uses Qwen through DashScope's OpenAI-compatible API. A separate LangGraph workflow and CLI live in `src/ai/`.
+
+```text
+src/ui/               Static browser walkthrough
+src/service/          HTTP API, configuration, rules, and recovery guidance
+src/service/ai/       Qwen API client and response guardrails
+src/ai/               Separate AI workflow and command-line interface
+src/mcp/              Model Context Protocol tools using the local rules
+tests/                Automated tests
+scripts/demo.sh       API walkthrough using curl
+docs/                 Product concept and project briefs
+```
+
+### Run checks
+
+From the repository root:
 
 ```bash
 uv run pytest
 ```
 
-Exercise every endpoint against a running server:
+The test suite disables live DashScope calls; you do not need an API key.
+
+With the server running, use a **second terminal** to exercise the API:
 
 ```bash
 bash scripts/demo.sh
 ```
 
-## Environment
+This script needs Bash and curl; on Windows, use Git Bash. Its automatic-mode request may call Qwen if you have configured a key.
 
-| Variable | Default | Purpose |
+### API reference
+
+Use http://localhost:8000/docs to send requests in your browser and inspect full request and response schemas.
+
+| Method | Path | Purpose |
 | --- | --- | --- |
-| `PORT` | `8000` | Port used by `python -m src.service.main` |
-| `DASHSCOPE_API_KEY` | empty | Enables Qwen enrichment; empty means rules-only |
-| `DASHSCOPE_BASE_URL` | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | DashScope endpoint |
-| `QWEN_MODEL` | `qwen-plus` | Model name |
-| `AI_TIMEOUT_MS` | `8000` | Qwen timeout; failures fall back to rules |
-| `ALLOW_ORIGINS` | localhost 8000/5173/3000 | Comma-separated CORS origins |
+| `GET` | `/health` | Server status and uptime |
+| `GET` | `/api/meta` | Configured engine, AI configuration state, demo flag, and version |
+| `GET` | `/api/scenarios` | The scripted `amir-payment` scenario |
+| `POST` | `/api/assess` | Warning signs, explanations, and evidence for a message |
+| `POST` | `/api/recovery` | Ordered next steps after an incident |
 
-`.env` is gitignored. Never commit a real key.
+<details>
+<summary>Example API requests (Bash / Git Bash)</summary>
 
-## API
-
-### `POST /api/assess?mode=auto|ai|rules`
+Assess a fictional message without calling AI:
 
 ```bash
 curl -s -X POST "http://localhost:8000/api/assess?mode=rules" \
@@ -79,107 +185,82 @@ curl -s -X POST "http://localhost:8000/api/assess?mode=rules" \
   }'
 ```
 
-Response shape (abridged):
+`message.sender` (1–120 characters) and `message.text` (1–2,000 characters) are required. `familiarContact` defaults to `true`, and `channel` defaults to `whatsapp`. Unknown fields are ignored.
 
-```jsonc
-{
-  "assessment": {
-    "level": "pause",
-    "engine": "rules",
-    "signals": [
-      { "id": "urgency", "icon": "⏱", "title": "Pressure to act quickly", "detail": "…" },
-      { "id": "link", "icon": "🔗", "title": "Link has not been verified", "detail": "…" },
-      { "id": "money", "icon": "💳", "title": "Unusual money request", "detail": "…" },
-      { "id": "secrecy", "icon": "🙊", "title": "Discourages independent verification", "detail": "…" }
-    ],
-    "summary": "Amir (Son) may be a familiar contact, but this request is not verified. …",
-    "disclaimer": "These are warning signs, not proof of a scam. …",
-    "aiAvailable": false,
-    "checks": [
-      { "id": "text_signals", "label": "…", "source": "Demo rules (local, deterministic)", "status": "completed", "result": "4 warning sign(s) found." },
-      { "id": "link", "label": "Link destination inspection", "source": "Not available in this demo", "status": "unavailable", "result": "The link was not opened, fetched or scanned." },
-      { "id": "contact", "label": "Independent check with Amir (Son)", "source": "A route you already trust — you confirm", "status": "not_run", "result": "…" }
-    ]
-  }
-}
-```
+The response contains an `assessment` with:
 
-- `text` is required, 1–2000 characters. Unknown fields are ignored.
-- `engine` is `"rules"` or `"qwen"`; `aiAvailable` states whether Qwen actually answered.
-- `mode=auto` (default) tries Qwen when a key is configured and silently falls
-  back to rules on timeout, network error, malformed JSON or unsafe output.
-  `mode=ai` is strict: if Qwen is disabled, unreachable or rejected it returns
-  `503` so a live-mode demo fails loudly. `mode=rules` never calls Qwen.
-- Qwen may only select from the four known signal IDs and rewrite explanations.
-  The app keeps canonical icons/titles, never drops a rule signal, and replaces
-  output containing verdict/reassurance language, URLs, phone numbers or email
-  addresses with the canonical rule text.
+- `level`: `pause` or `no_signals`—neither is a safety verdict.
+- `signals`: warning signs with explanations.
+- `checks`: the source, status, and result of each check; missing checks stay `not_run` or `unavailable`.
+- `summary` and `disclaimer`: context and limitations.
+- `engine` and `aiAvailable`: whether local rules or Qwen supplied the assessment.
 
-### Other endpoints
+Qwen output is constrained to the four known warning signs and cannot remove a sign found by local rules.
 
-| Method + path | Response |
-| --- | --- |
-| `GET /health` | `{ "status": "ok", "uptime": 1.2 }` |
-| `GET /api/meta` | service state, `aiEnabled`, `demoDataOnly: true`, version |
-| `GET /api/scenarios` | the one scripted `amir-payment` scenario |
-| `POST /api/recovery` | ordered next steps for `clicked_link`, `entered_credentials`, `sent_money`, `shared_info` |
+Request guidance after sending money:
 
 ```bash
-curl -s -X POST http://localhost:8000/api/recovery \
+curl -s -X POST "http://localhost:8000/api/recovery" \
   -H "Content-Type: application/json" \
   -d '{"incident":"sent_money"}'
 ```
 
-Recovery content is deliberately general: call the bank using the number on
-your card or statement, report to NSRC on **997**, make a police report, keep
-evidence, stop further payments. It never promises recovery or account security.
+Supported incidents: `clicked_link`, `entered_credentials`, `sent_money`, and `shared_info`.
 
-## MCP server
+</details>
 
-The MCP server imports the same domain module as HTTP — no duplicated rules.
+### MCP tools
+
+The **Model Context Protocol (MCP)** server lets compatible clients use the same local rules and recovery guidance as the HTTP API. It runs separately over standard input/output and does not require the web server or Qwen.
 
 ```bash
 uv run python -m src.mcp.server
 ```
 
-Tools: `assess_message`, `get_recovery_guidance`, `list_scenarios`.
+Available tools: `assess_message`, `get_recovery_guidance`, and `list_scenarios`.
 
-Example client configuration:
+<details>
+<summary>Example MCP client configuration</summary>
+
+Replace `/absolute/path/to/no-scam` with your checkout's absolute path. On Windows, use forward slashes, such as `C:/projects/no-scam`.
 
 ```json
 {
   "mcpServers": {
     "no-scam-watchdog": {
       "command": "uv",
-      "args": ["run", "python", "-m", "src.mcp.server"],
-      "cwd": "/path/to/no-scam"
+      "args": ["--directory", "/absolute/path/to/no-scam", "run", "python", "-m", "src.mcp.server"]
     }
   }
 }
 ```
 
-## Demo boundary and honest claims
+</details>
 
-- One text scenario with fake data; no real contacts or personal information.
-- The sample link is never opened, fetched or scanned. There is no live URL
-  scanning, call interception, account access, identity proof or hardware.
-- `/api/meta` exposes `demoDataOnly`, `engine` and `aiEnabled` so the demo can
-  state what is real and what is simulated.
-- The physical companion is represented by the product story, not implemented.
-- Missing checks stay `not_run`/`unavailable` instead of becoming implied trust.
-- Message bodies are not logged. Qwen mode sends the sample message to
-  DashScope; use fake data only.
+### Standalone AI workflow
 
-## Layout
+To explore the separate CLI without a live model:
 
+```bash
+uv run watchdog-ai --list-demos
+uv run watchdog-ai --demo familiar-link --mode offline
 ```
-src/service/           FastAPI app, config, domain logic
-  domain/rules.py      deterministic warning signals + evidence
-  domain/recovery.py   after-the-fact guidance
-  domain/scenarios.py  scripted demo data
-src/service/ai/qwen.py Qwen client, guardrails, rules fallback
-src/mcp/server.py      MCP stdio tools over the same domain
-src/ui/                static demo UI (from feat/frontend-watchdog)
-tests/                 pytest suite
-scripts/demo.sh        curl walkthrough of all endpoints
-```
+
+This workflow is separate from the browser walkthrough and HTTP assessment API.
+
+## Troubleshooting
+
+| Problem | What to try |
+| --- | --- |
+| `uv` is not found | Install uv using the prerequisites link, then reopen your terminal. |
+| Imports or dependencies are missing | Run `uv sync` from the repository root, then use the `uv run` commands above. Use `pyproject.toml` for the full app; `requirements.txt` covers the standalone AI workflow. |
+| Port 8000 is already in use | Change the startup command to `--port 8001`, then open http://localhost:8001/. |
+| The browser cannot connect | Keep the server terminal open, check it for startup errors, and make sure the browser address matches the port. |
+| The browser still says Qwen is not connected | Expected: the browser uses prepared content. Test live AI through `/docs` or the API instead. |
+| `mode=ai` returns `503` | Check your key, endpoint, model access, and connectivity; restart after configuration changes. Use `mode=rules` to continue without AI. |
+
+## More about the project
+
+- [Problem statement](docs/problem-statement.md)
+- [Solution brief](docs/solution-brief.md)
+- [Full WatchDog concept and demo boundaries](docs/digital-watchdog-master-brief.md)
