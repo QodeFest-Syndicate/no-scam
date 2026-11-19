@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from src.ai import qwen
+from src.service.ai import qwen
 from src.service.config import get_settings
 from src.service.domain import recovery, rules
 from src.service.domain.scenarios import SCENARIOS

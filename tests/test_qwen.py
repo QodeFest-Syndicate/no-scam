@@ -1,4 +1,4 @@
-from src.ai.qwen import build_qwen_assessment
+from src.service.ai.qwen import build_qwen_assessment
 from src.service.domain import rules
 from src.service.domain.types import MessageIn
 

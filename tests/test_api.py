@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.ai import qwen
+from src.service.ai import qwen
 from src.service.main import app
 
 client = TestClient(app)

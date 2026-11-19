@@ -174,7 +174,7 @@ src/service/           FastAPI app, config, domain logic
   domain/rules.py      deterministic warning signals + evidence
   domain/recovery.py   after-the-fact guidance
   domain/scenarios.py  scripted demo data
-src/ai/qwen.py         Qwen client, guardrails, rules fallback
+src/service/ai/qwen.py Qwen client, guardrails, rules fallback
 src/mcp/server.py      MCP stdio tools over the same domain
 src/ui/                static demo UI (from feat/frontend-watchdog)
 tests/                 pytest suite
