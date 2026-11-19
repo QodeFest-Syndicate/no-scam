@@ -1,7 +1,12 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "no-scam"
 version = "0.1.0"
 description = "WatchDog AI demo backend: pause, verify through a known route, recover."
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",
@@ -10,7 +15,15 @@ dependencies = [
     "openai>=1.40",
     "python-dotenv>=1.0",
     "mcp>=2.0",
+    "langgraph>=1.2,<2",
+    "langchain-openai>=1.0,<2",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+watchdog-ai = "ai.cli:main"
 
 [dependency-groups]
 dev = [
@@ -18,9 +31,14 @@ dev = [
     "httpx>=0.27",
 ]
 
-[tool.uv]
-package = false
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ai*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+addopts = "-q"

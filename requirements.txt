@@ -1,0 +1,9 @@
+# Runtime dependencies for the watchdog swarm (python -m ai).
+# Install with:  .venv/bin/python -m pip install -r requirements.txt
+langgraph>=1.2,<2
+langchain-openai>=1.0,<2
+python-dotenv>=1.0
+pydantic>=2.6
+
+# Dev / test only
+pytest>=8
