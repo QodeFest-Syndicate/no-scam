@@ -70,8 +70,8 @@ variable "name" {
   default     = "no-scam-demo"
 
   validation {
-    condition     = can(regex("^[a-z][a-z0-9-]{1,39}$", var.name))
-    error_message = "Use 2-40 lowercase letters, digits or hyphens, starting with a letter."
+    condition     = can(regex("^[a-z][a-z0-9-]{0,38}[a-z0-9]$", var.name)) && !strcontains(var.name, "--")
+    error_message = "Use 2-40 lowercase letters, digits or single hyphens, starting with a letter and ending with a letter or digit."
   }
 }
 

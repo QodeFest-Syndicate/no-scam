@@ -125,3 +125,49 @@ run "reject_wrong_os" {
 
   expect_failures = [var.image_id]
 }
+
+run "reject_trailing_hostname_hyphen" {
+  command = plan
+
+  variables {
+    name = "demo-"
+  }
+
+  expect_failures = [var.name]
+}
+
+run "reject_consecutive_hostname_hyphens" {
+  command = plan
+
+  variables {
+    name = "no-scam--demo"
+  }
+
+  expect_failures = [var.name]
+}
+
+run "accept_minimum_hostname_length" {
+  command = plan
+
+  variables {
+    name = "a1"
+  }
+
+  assert {
+    condition     = alicloud_instance.app.host_name == "a1"
+    error_message = "Two-character resource names must remain valid ECS hostnames."
+  }
+}
+
+run "accept_maximum_hostname_length" {
+  command = plan
+
+  variables {
+    name = "abcdefghijklmnopqrstuvwxyz-0123456789-ab"
+  }
+
+  assert {
+    condition     = alicloud_instance.app.host_name == "abcdefghijklmnopqrstuvwxyz-0123456789-ab"
+    error_message = "Forty-character resource names with single hyphens must remain valid ECS hostnames."
+  }
+}
