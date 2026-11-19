@@ -17,7 +17,7 @@ fetches the link. Demo data only.
 
 | Layer | Choice |
 | --- | --- |
-| Runtime | Python 3.12 (managed by `uv`) |
+| Runtime | Python 3.11+ (verified on 3.12; managed by `uv`) |
 | HTTP | FastAPI + Uvicorn + Pydantic v2 |
 | AI (optional) | Qwen via DashScope's OpenAI-compatible API |
 | MCP | Python MCP SDK (`mcp.server.mcpserver`), stdio transport |
@@ -106,11 +106,14 @@ Response shape (abridged):
 
 - `text` is required, 1–2000 characters. Unknown fields are ignored.
 - `engine` is `"rules"` or `"qwen"`; `aiAvailable` states whether Qwen actually answered.
-- Qwen runs only when a key is configured and `mode` is `auto` or `ai`. Timeouts,
-  network errors, malformed JSON or unsafe language fall back to rules silently.
+- `mode=auto` (default) tries Qwen when a key is configured and silently falls
+  back to rules on timeout, network error, malformed JSON or unsafe output.
+  `mode=ai` is strict: if Qwen is disabled, unreachable or rejected it returns
+  `503` so a live-mode demo fails loudly. `mode=rules` never calls Qwen.
 - Qwen may only select from the four known signal IDs and rewrite explanations.
-  The app keeps canonical icons/titles, never drops a rule signal, and rejects
-  verdict language such as "definitely" or "is a scam".
+  The app keeps canonical icons/titles, never drops a rule signal, and replaces
+  output containing verdict/reassurance language, URLs, phone numbers or email
+  addresses with the canonical rule text.
 
 ### Other endpoints
 
@@ -149,7 +152,7 @@ Example client configuration:
     "no-scam-watchdog": {
       "command": "uv",
       "args": ["run", "python", "-m", "src.mcp.server"],
-      "cwd": "C:/Users/Nick/Documents/GitHub/no-scam"
+      "cwd": "/path/to/no-scam"
     }
   }
 }

@@ -24,6 +24,23 @@ def test_malay_urgency_word_is_detected():
     ]
 
 
+def test_curly_apostrophe_still_flags_secrecy():
+    text = "Please don’t call me and don’t tell anyone."
+    assert [signal.id for signal in rules.find_signals(text)] == ["secrecy"]
+
+
+def test_money_rule_does_not_match_form_numbers_or_repayment():
+    assert rules.find_signals("Fill in form 2 tomorrow.") == []
+    assert rules.find_signals("Repayment display at 3pm.") == []
+
+
+def test_money_rule_still_flags_payment_words_and_amounts():
+    assert [signal.id for signal in rules.find_signals("Please pay RM50.")] == ["money"]
+    assert [signal.id for signal in rules.find_signals("Complete the payment today.")] == [
+        "money"
+    ]
+
+
 def test_benign_message_has_no_signals():
     message = make_message("Hi Mak, see you at 3pm. Call me later.")
     assessment = rules.assess_with_rules(message)

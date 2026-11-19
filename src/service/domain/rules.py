@@ -44,8 +44,14 @@ _SIGNAL_TEXT: dict[str, tuple[str, str, str]] = {
 _PATTERNS: dict[str, re.Pattern[str]] = {
     "urgency": re.compile(r"urgently|right now|quickly|immediately|segera", re.IGNORECASE),
     "link": re.compile(r"https?://\S+", re.IGNORECASE),
-    "money": re.compile(r"rm\s*\d+|pay|transfer|bank account", re.IGNORECASE),
-    "secrecy": re.compile(r"don't call|do not call|don't tell|keep.*secret", re.IGNORECASE),
+    "money": re.compile(
+        r"\brm\s*\d+|\bpay(?:ment)?\b|\btransfer\b|bank account",
+        re.IGNORECASE,
+    ),
+    "secrecy": re.compile(
+        r"don['’]t call|do not call|don['’]t tell|keep.*secret",
+        re.IGNORECASE,
+    ),
 }
 
 

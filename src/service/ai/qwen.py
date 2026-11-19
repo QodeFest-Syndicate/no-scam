@@ -43,12 +43,33 @@ Return ONLY JSON in this shape:
 If no signal applies, return {"signals": [], "summary": "..."}.
 """
 
-_BANNED_PHRASES = re.compile(
-    r"\b(is a scam|definitely|100\s*%|guaranteed|proven safe|is safe|proves|"
-    r"verified identity|confirmed scam)\b",
+_UNSAFE_TEXT = re.compile(
+    r"\b("
+    r"is a scam|not a scam|definitely|100\s*%|guaranteed|proven safe|is safe|"
+    r"safe to (?:click|pay|open|send)|proves|verified identity|confirmed scam|"
+    r"genuine|legitimate|is real|trusted (?:sender|link)|verified"
+    r")\b",
+    re.IGNORECASE,
+)
+# "not verified" / "unverified" are wanted uncertainty language, not reassurance.
+_UNCERTAINTY_VERIFIED = re.compile(
+    r"\b(?:not|never)\s+(?:\w+\s+){0,2}verified\b|\bunverified\b",
+    re.IGNORECASE,
+)
+# Attacker-controlled text must never reach the user as WatchDog's own advice.
+_CONTACT_DETAILS = re.compile(
+    r"https?://|www\.|\b[\w.-]+\.(?:com|my|net|org|example|xyz|link)\b|"
+    r"[\w.+-]+@[\w-]+\.|\+?\d[\d\s-]{6,}\d",
     re.IGNORECASE,
 )
 _JSON_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
+
+
+def _looks_unsafe(text: str) -> bool:
+    without_uncertainty = _UNCERTAINTY_VERIFIED.sub(" ", text)
+    return bool(
+        _UNSAFE_TEXT.search(without_uncertainty) or _CONTACT_DETAILS.search(text)
+    )
 
 
 def _client() -> OpenAI | None:
@@ -77,7 +98,7 @@ def _clean_detail(value: Any, signal_id: str) -> str:
     if not isinstance(value, str):
         return default
     text = " ".join(value.split()).strip()
-    if not text or len(text) > 300 or _BANNED_PHRASES.search(text):
+    if not text or len(text) > 300 or _looks_unsafe(text):
         return default
     return text
 
@@ -86,7 +107,7 @@ def _clean_summary(value: Any, fallback: str) -> str:
     if not isinstance(value, str):
         return fallback
     text = " ".join(value.split()).strip()
-    if not text or len(text) > 400 or _BANNED_PHRASES.search(text):
+    if not text or len(text) > 400 or _looks_unsafe(text):
         return fallback
     return text
 

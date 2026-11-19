@@ -1,3 +1,5 @@
+import pytest
+
 from src.service.ai.qwen import build_qwen_assessment
 from src.service.domain import rules
 from src.service.domain.types import MessageIn
@@ -85,3 +87,70 @@ def test_malformed_signals_shape_is_rejected():
         fallback_assessment(),
     )
     assert result is None
+
+
+@pytest.mark.parametrize(
+    "summary",
+    [
+        "This is not a scam.",
+        "This message is genuine.",
+        "It looks legitimate, go ahead.",
+        "It is safe to pay now.",
+        "This is a trusted sender.",
+        "The identity is verified.",
+    ],
+)
+def test_reassurance_language_falls_back_to_rules_summary(summary):
+    fallback = fallback_assessment()
+    result = build_qwen_assessment(
+        MessageIn(sender="Amir (Son)", text=TEXT),
+        {"signals": [], "summary": summary},
+        fallback,
+    )
+    assert result is not None
+    assert result.summary == fallback.summary
+
+
+def test_uncertainty_language_is_allowed():
+    summary = "This request has not been verified. Call Amir on a number you already saved."
+    result = build_qwen_assessment(
+        MessageIn(sender="Amir (Son)", text=TEXT),
+        {"signals": [], "summary": summary},
+        fallback_assessment(),
+    )
+    assert result is not None
+    assert result.summary == summary
+
+
+@pytest.mark.parametrize(
+    "contact",
+    [
+        "Call 012-345 6789 to confirm.",
+        "Visit https://verify-amir.example for help.",
+        "Email help@verify-amir.example for details.",
+        "Go to verify-amir.example to check.",
+    ],
+)
+def test_contact_details_in_detail_use_canonical_text(contact):
+    result = build_qwen_assessment(
+        MessageIn(sender="Amir (Son)", text=TEXT),
+        {"signals": [{"id": "urgency", "detail": contact}], "summary": "Pause and check."},
+        fallback_assessment(),
+    )
+    assert result is not None
+    urgency = next(signal for signal in result.signals if signal.id == "urgency")
+    assert urgency.detail == rules.canonical_signal("urgency").detail
+
+
+def test_contact_details_in_summary_fall_back_to_rules_summary():
+    fallback = fallback_assessment()
+    result = build_qwen_assessment(
+        MessageIn(sender="Amir (Son)", text=TEXT),
+        {
+            "signals": [{"id": "urgency", "detail": "It asks you to act immediately."}],
+            "summary": "Call 012-345 6789 to confirm before you act.",
+        },
+        fallback,
+    )
+    assert result is not None
+    assert result.summary == fallback.summary

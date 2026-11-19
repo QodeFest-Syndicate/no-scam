@@ -107,24 +107,40 @@ def test_assess_rejects_unknown_mode():
     assert client.post("/api/assess?mode=magic", json=payload()).status_code == 422
 
 
-def test_ai_mode_falls_back_without_key():
-    response = client.post("/api/assess?mode=ai", json=payload())
+def test_auto_mode_falls_back_without_key():
+    response = client.post("/api/assess?mode=auto", json=payload())
     assert response.status_code == 200
     assessment = response.json()["assessment"]
     assert assessment["engine"] == "rules"
     assert assessment["aiAvailable"] is False
 
 
-def test_ai_exception_falls_back_to_rules(monkeypatch):
+def test_ai_mode_is_strict_without_key():
+    response = client.post("/api/assess?mode=ai", json=payload())
+    assert response.status_code == 503
+    assert "mode=auto" in response.json()["detail"]
+
+
+def test_auto_mode_falls_back_when_qwen_raises(monkeypatch):
+    def explode(message, fallback):
+        raise RuntimeError("network down")
+
+    monkeypatch.setattr(qwen, "assess_with_qwen", explode)
+    response = client.post("/api/assess?mode=auto", json=payload())
+    assert response.status_code == 200
+    assessment = response.json()["assessment"]
+    assert assessment["engine"] == "rules"
+    assert assessment["level"] == "pause"
+
+
+def test_ai_mode_returns_503_when_qwen_raises(monkeypatch):
     def explode(message, fallback):
         raise RuntimeError("network down")
 
     monkeypatch.setattr(qwen, "assess_with_qwen", explode)
     response = client.post("/api/assess?mode=ai", json=payload())
-    assert response.status_code == 200
-    assessment = response.json()["assessment"]
-    assert assessment["engine"] == "rules"
-    assert assessment["level"] == "pause"
+    assert response.status_code == 503
+    assert "mode=auto" in response.json()["detail"]
 
 
 def test_ai_assessment_is_used_when_available(monkeypatch):

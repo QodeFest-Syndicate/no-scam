@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Literal
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -40,7 +40,17 @@ def _assess(message: MessageIn, mode: AssessMode) -> Assessment:
     except Exception as exc:
         logger.warning("Qwen enrichment failed (%s); serving rules assessment", type(exc).__name__)
         enriched = None
-    return enriched or fallback
+    if enriched is None:
+        if mode == "ai":
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Qwen is unavailable. Retry with mode=auto for the rules "
+                    "assessment."
+                ),
+            )
+        return fallback
+    return enriched
 
 
 def create_app() -> FastAPI:
@@ -106,4 +116,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=get_settings().port)
+    uvicorn.run(app, host="127.0.0.1", port=get_settings().port)
