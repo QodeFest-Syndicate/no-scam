@@ -81,6 +81,12 @@ The same server serves both the frontend and API—there is no second developmen
 
 Warning signs are **not proof of fraud**, and finding no signs does **not** mean a message is safe. Recovery suggestions are general guidance, not a guarantee of recovering money or securing an account. The demo includes Malaysia-specific guidance; confirm current official procedures before any real-world use.
 
+## Optional WhatsApp test-number pilot
+
+Forward or paste fictional suspicious text to Meta's test business number and receive an automatic WatchDog reply. This does not read private chats. The opt-in integration verifies Meta signatures, restricts recipients, queues work durably and defaults to local rules; AI requires separate consent and configuration.
+
+Follow the [WhatsApp setup, backend strategy and rollout gates](docs/whatsapp-test-pilot.md). You need Meta test credentials, a private persistent SQLite directory and a publicly trusted HTTPS callback exposing only the webhook. These resources are not provisioned automatically; live Meta delivery must be verified separately.
+
 ## Optional Qwen AI
 
 These settings enable AI enrichment for both the **HTTP API and browser walkthrough**. Without a key, the browser uses local rules.
